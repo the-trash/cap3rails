@@ -1,4 +1,4 @@
-#settings/*.yml
+settings/*.yml
 templates/database.production.yml
 
 # Logs
