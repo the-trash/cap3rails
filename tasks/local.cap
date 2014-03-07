@@ -1,0 +1,39 @@
+namespace :local do
+  # RVM_HOOK=false cap development local:copy
+  desc "RVM_HOOK=false cap development local:copy"
+  task :copy do
+    dest     = fetch :deploy_to
+    conf_dir = "#{ dest }/config"
+
+    if redis?
+      FileUtils.mkdir_p fetch(:redis_dir)
+      local_template "redis/redis.config", "#{ conf_dir }/_#{ fetch :redis_config_file }.example"
+      local_template "redis/redis.initializer.rb", "#{ conf_dir }/initializers/_redis.rb.example"
+    end
+
+    if sidekiq?
+      local_template "sidekiq/config.yml", "#{ conf_dir }/_sidekiq.yml.example"
+      local_template "sidekiq/sidekiq.rb", "#{ conf_dir }/initializers/_sidekiq.rb.example"
+    end
+
+    if sphinx?
+      local_template "thinking_sphinx/config.yml", "#{ conf_dir }/_thinking_sphinx.yml.example"
+    end
+
+    if whenever?
+      local_template "whenever/config.rb", "#{ conf_dir }/_schedule.rb.example"
+    end
+
+    if unicorn?
+      local_template "unicorn/config.rb", "#{ conf_dir }/_unicorn.rb.example"
+    end
+
+    puts
+
+    FileUtils.mkdir_p "#{ dest }/app.rc"
+    local_template "app.rc/init.sh",  "#{ dest }/app.rc/init.sh",  { dest: dest }
+    local_template "app.rc/start.sh", "#{ dest }/app.rc/start.sh", { dest: dest }
+    local_template "app.rc/stop.sh",  "#{ dest }/app.rc/stop.sh",  { dest: dest }
+    puts "chmod -R 755 #{ dest }/app.rc"
+  end
+end

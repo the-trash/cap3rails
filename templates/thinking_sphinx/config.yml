@@ -1,0 +1,12 @@
+# <% root_path = shared_path %> 
+<%= fetch :stage %>:
+  mysql41: <%= Configs.sphinx.port %>
+  address: localhost
+  morphology: stem_ru
+
+  indices_location:   "<%= root_path %>/search_index"
+  configuration_file: "<%= fetch :sphinx_conf_file %>"
+  log:         "<%= root_path %>/log/searchd.log"
+  query_log:   "<%= root_path %>/log/searchd.query.log"
+  pid_file:    "<%= root_path %>/tmp/pids/searchd.<%= fetch :stage %>.pid"
+  binlog_path: "<%= root_path %>/tmp/binlog/<%= fetch :stage %>"

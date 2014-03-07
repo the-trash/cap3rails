@@ -1,0 +1,23 @@
+staging:
+  database: <%= Configs.db.name     %>
+  adapter:  <%= Configs.db.adapter  %>
+  username: <%= Configs.db.username %>
+  password: <%= Configs.db.password %>
+
+  host:     <%= Configs.db.host %>
+  pool:     <%= Configs.db.pool %>
+  encoding: <%= Configs.db.encoding %>
+  reconnect: true
+  timeout:   5000
+
+production:
+  database: <%= Configs.db.name     %>
+  adapter:  <%= Configs.db.adapter  %>
+  username: <%= Configs.db.username %>
+  password: <%= Configs.db.password %>
+
+  host:     <%= Configs.db.host %>
+  pool:     <%= Configs.db.pool %>
+  encoding: <%= Configs.db.encoding %>
+  reconnect: true
+  timeout:   5000

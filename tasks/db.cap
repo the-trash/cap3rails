@@ -1,0 +1,108 @@
+namespace :db do
+  desc "cap production db:dump"
+
+  task :dump do
+    on roles(:all) do
+      if Configs.db.adapter.match /mysql/
+        task! "db:mysql:dump"
+      else
+        task! "db:pg:dump"
+      end
+    end
+  end
+
+  namespace :pg do
+    desc "cap production db:pg:dump"
+
+    task :dump do
+      on roles(:all) do
+        pgpass = '~/.pgpass'
+
+        dump_path = shared_path + "dumps"
+        execute :mkdir, '-p', dump_path
+
+        port    = 5432
+        host    = Configs.db.host
+        db_name = Configs.db.name
+        db_user = Configs.db.username
+        pass    = Configs.db.password
+
+        access = [host, port, db_name, db_user, pass].join ':'
+
+        execute :rm, '-f', pgpass
+        execute :echo, "'#{ access }'", '>', pgpass
+        execute :chmod, '0600', pgpass
+        execute :cat, pgpass
+
+        file_name = [db_name, Time.now.strftime("%Y_%m_%d_%H_%M"), :pg, :sql].join('.')
+
+        within dump_path do
+          opts = "--format=custom --host=#{ host } --username=#{ db_user } --file=#{ file_name } #{ db_name }"
+
+          warn "*" * 50
+          info "pg_dump #{ opts }"
+          info "PASS: #{ pass }"
+
+          execute :pg_dump, opts
+        end
+
+        execute :rm, pgpass
+
+        local_file = [fetch(:local_backups_dir), file_name].join '/'
+
+        ssh_addr = "#{ Configs.role.app.ssh.user }@#{ Configs.role.app.address }"
+        copy_cmd = "scp #{ ssh_addr }:#{ dump_path }/#{ file_name } #{ local_file }"
+
+        warn "*" * 50
+        info "COPY: #{ copy_cmd }"
+        info Configs.role.app.ssh.password
+
+        warn "*" * 50
+        system copy_cmd
+
+        warn "*" * 50
+        info "POSTGRES: pg_restore -h localhost -d LOCAL_DB_NAME #{ local_file }"
+      end
+    end
+  end
+
+  namespace :mysql do
+    desc "cap production db:mysql:dump"
+
+    task :dump do
+      on roles(:all) do
+        dump_path = shared_path + "dumps"
+        execute :mkdir, '-p', dump_path
+
+        db_name = Configs.db.name
+        db_user = Configs.db.username
+        pass    = Configs.db.password
+
+        file_name = [db_name, Time.now.strftime("%Y_%m_%d_%H_%M"), :mysql, :sql].join('.')
+
+        opts = "-u #{ db_user } -p#{ pass } #{ db_name } > #{ dump_path }/#{ file_name }"
+
+        warn "*" * 50
+        info "mysqldump #{ opts }"
+        info "PASS: #{ pass }"
+
+        execute :mysqldump, opts
+
+        local_file = [fetch(:local_backups_dir), file_name].join '/'
+
+        ssh_addr = "#{ Configs.role.app.ssh.user }@#{ Configs.role.app.address }"
+        copy_cmd = "scp #{ ssh_addr }:#{ dump_path }/#{ file_name } #{ local_file }"
+
+        warn "*" * 50
+        info "COPY: #{ copy_cmd }"
+        info Configs.role.app.ssh.password
+
+        warn "*" * 50
+        system copy_cmd
+
+        warn "*" * 50
+        info "MYSQL: mysql -u LOCAL_BD_USER -pPASSWORD123 LOCAL_DB_NAME < #{ local_file }"
+      end
+    end
+  end
+end

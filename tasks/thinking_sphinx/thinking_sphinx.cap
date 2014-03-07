@@ -1,0 +1,72 @@
+namespace :ts do
+  %w[ configure index rebuild generate regenerate start stop clear ].each do |action|
+    desc "cap production ts:#{ action }"
+    task action do
+      on roles(:all) do
+        within current_path do
+          with rails_env: fetch(:stage) do
+            execute :rake, "ts:#{ action }"
+          end
+        end
+      end
+    end
+  end
+
+  desc "cap production ts:restart"
+  task :restart do
+    on roles(:all) do
+      within current_path do
+        with rails_env: fetch(:stage) do
+          sphinx_conf = fetch :sphinx_conf_file
+
+          if remote_file_exists? sphinx_conf
+            execute :rake, "ts:restart"
+          end
+        end
+      end
+    end
+  end
+
+  desc "cap production ts:first_start"
+  task :first_start do
+    on roles(:all) do
+      within current_path do
+        with rails_env: fetch(:stage) do
+          task! "ts:configure"
+          task! "ts:index"
+          task! "ts:start"
+          info "UNCOMMENT: config/deploy.rb => linked_files_addons |= %w[ config/searchd.config ]"
+        end
+      end
+    end
+  end
+
+  namespace :config do
+    desc "cap production ts:config:copy"
+    task :copy do
+      on roles(:all) do
+        template "thinking_sphinx/config.yml", "#{ fetch(:configs_dir) }/thinking_sphinx.yml"
+      end
+    end
+
+    desc "cap production ts:config:show"
+    task :show do
+      on roles(:all) do
+       execute :cat, "#{ fetch(:configs_dir) }/thinking_sphinx.yml"
+      end
+    end
+  end
+
+  namespace :stage_config do
+    desc "cap production ts:stage_config:show"
+    task :show do
+      on roles(:all) do
+        sphinx_conf = fetch :sphinx_conf_file
+
+        if remote_file_exists? sphinx_conf
+          execute :cat, sphinx_conf
+        end
+      end
+    end
+  end
+end

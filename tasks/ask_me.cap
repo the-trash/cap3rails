@@ -1,0 +1,14 @@
+namespace :ask_me do
+  task :ask_me do
+    on roles(:all) do
+      env = ARGV.first
+      if env == 'production'
+        ask :ask_me, ">>> #{ env.upcase } <<< need to continue? (YES/NO) "
+        answer = fetch :ask_me
+        exit if answer != 'YES'
+
+        # task! "db:dump"
+      end
+    end
+  end
+end

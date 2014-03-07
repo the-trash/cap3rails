@@ -1,0 +1,103 @@
+namespace :redis do
+  desc "cap production redis:process"
+  task :process do
+    on roles(:app) do
+      within fetch(:redis_dir) do
+        execute "ps aux | grep redis"
+      end
+    end
+  end
+
+  desc "cap production redis:start"
+  task :start do
+    on roles(:app) do
+      execute "redis-server", fetch(:redis_config_file_path)
+      execute :echo, "REDIS PID: `cat #{ fetch :redis_pid_file_path }`"
+    end
+  end
+
+  desc "cap production redis:stop"
+  task :stop do
+    on roles(:app) do
+      within fetch(:redis_dir) do
+        port_num = Configs.redis.port
+        pid = fetch(:redis_pid_file_path)
+
+        if remote_file_exists? pid
+          execute "redis-cli", "-h localhost -p #{ port_num } shutdown"
+        end
+      end
+    end
+  end
+
+  desc "cap production redis:restart"
+  task :restart do
+    task! "redis:stop"
+    task! "redis:start"
+  end
+
+  desc "cap production redis:status"
+  task :status do
+    on roles(:app) do
+      path = fetch(:redis_pid_file_path)
+      info remote_file_exists?(path) ? "REDIS ONLINE" : "REDIS DOES NOT STARTED"
+    end
+  end
+
+  namespace :port_file do
+    desc "cap production redis:port_file:copy"
+    task :copy do
+      on roles(:app) do
+        template "redis/redis.port", fetch(:redis_port_file_path)
+      end
+    end
+
+    desc "cap production redis:port_file:show"
+    task :show do
+      on roles(:app) do
+        src_path  = fetch(:redis_port_file_path)
+        dest_path = "#{ current_path }/config/#{ fetch :redis_port_file }"
+        
+        execute :cat, src_path  if remote_file_exists?(src_path)
+        execute :cat, dest_path if remote_file_exists?(dest_path)
+      end
+    end
+  end
+
+  namespace :init do
+    desc "cap production redis:init:copy"
+    task :copy do
+      on roles(:app) do
+        template "redis/redis.initializer.rb", "#{ fetch :configs_dir }/initializers/redis.rb"
+      end
+    end
+
+    desc "cap production redis:init:show"
+    task :show do
+      on roles(:app) do
+        src_file  = "#{ fetch :configs_dir }/initializers/redis.rb"
+        init_file = "#{ current_path }/config/initializers/redis.rb"
+
+        execute :cat, src_file  if remote_file_exists? src_file
+        execute :cat, init_file if remote_file_exists? init_file
+      end
+    end
+  end
+
+  namespace :config do
+    desc "cap production redis:config:copy"
+    task :copy do
+      on roles(:app) do
+        execute :mkdir, '-p', fetch(:redis_dir)
+        template "redis/redis.config", fetch(:redis_config_file_path)
+      end
+    end
+
+    desc "cap production redis:config:show"
+    task :show do
+      on roles(:app) do
+        execute :cat, fetch(:redis_config_file_path)
+      end
+    end 
+  end
+end

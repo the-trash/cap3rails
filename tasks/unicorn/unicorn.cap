@@ -1,0 +1,33 @@
+namespace :unicorn do
+  # cap production unicorn:start
+  %w[start restart stop force force-stop].each do |action|
+    desc "cap production unicorn:#{action}"
+    task action do
+      on roles(:all) do
+        web_server_path = [fetch(:web_server_dir), 'unicorn/server'].join '/'
+        execute "(#{ rvm_do } #{ web_server_path } #{ action })"
+      end
+    end    
+  end
+
+  namespace :config do
+    desc "cap production unicorn:config:show"
+    task :show do
+      on roles(:all) do
+        execute :cat, "#{ fetch :web_server_dir }/unicorn/config.rb"
+      end
+    end
+
+    desc "cap production unicorn:config:copy"
+    task :copy do
+      on roles(:all) do
+        execute :mkdir, '-p', "#{ fetch :web_server_dir }/unicorn"
+
+        template "unicorn/config.rb", "#{ fetch :web_server_dir }/unicorn/config.rb"
+        template "unicorn/server",    "#{ fetch :web_server_dir }/unicorn/server"
+        
+        execute :chmod, '744', "#{ fetch :web_server_dir }/unicorn/server"
+      end
+    end
+  end
+end

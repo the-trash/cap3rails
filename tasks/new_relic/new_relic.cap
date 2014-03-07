@@ -1,0 +1,18 @@
+namespace :new_relic do
+  namespace :config do
+    desc "cap production new_relic:config:copy"
+    task :copy do
+      on roles(:all) do
+        template "new_relic/new_relic.yml", "#{ fetch :configs_dir }/newrelic.yml"
+      end
+    end
+
+    desc "cap production new_relic:config:show"
+    task :show do
+      on roles(:all) do
+        execute :cat, "#{ fetch :configs_dir }/newrelic.yml"
+        execute :cat, "#{ current_path }/config/newrelic.yml"
+      end
+    end
+  end
+end

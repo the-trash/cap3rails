@@ -1,0 +1,59 @@
+GIT
+  remote: git://github.com/capistrano/bundler.git
+  revision: 079f221b6bf1637097dfd7f8ab392c7f4e0510d1
+  specs:
+    capistrano-bundler (1.1.1)
+      capistrano (~> 3.0)
+      sshkit (~> 1.2)
+
+GIT
+  remote: git://github.com/capistrano/capistrano.git
+  revision: c7dcf87cc746cb6512b7ddd2a1a339bd868cd56d
+  specs:
+    capistrano (3.1.0)
+      i18n
+      rake (>= 10.0.0)
+      sshkit (~> 1.3)
+
+GIT
+  remote: git://github.com/capistrano/rails.git
+  revision: f1ea178f7aeccc64b7679cd0bf61d688dc2c612b
+  specs:
+    capistrano-rails (1.1.1)
+      capistrano (~> 3.1)
+      capistrano-bundler (~> 1.1)
+
+GIT
+  remote: git://github.com/capistrano/rvm.git
+  revision: 19e8d15ae3d705499c610370f159d523bbedbd94
+  specs:
+    capistrano-rvm (0.1.0)
+      capistrano (~> 3.0)
+      sshkit (~> 1.2)
+
+GEM
+  remote: http://rubygems.org/
+  specs:
+    i18n (0.6.9)
+    net-scp (1.1.2)
+      net-ssh (>= 2.6.5)
+    net-ssh (2.7.0)
+    rake (10.1.1)
+    settingslogic (2.0.9)
+    sshkit (1.3.0)
+      net-scp (>= 1.1.2)
+      net-ssh
+      term-ansicolor
+    term-ansicolor (1.2.2)
+      tins (~> 0.8)
+    tins (0.13.1)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  capistrano!
+  capistrano-bundler!
+  capistrano-rails!
+  capistrano-rvm!
+  settingslogic

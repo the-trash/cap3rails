@@ -1,0 +1,78 @@
+upstream <%= fetch (:web_server_socket) %> {
+  server unix:<%= fetch(:web_server_sock) %> fail_timeout=20;
+}
+
+server {
+  listen 80;
+  server_name www.<%= fetch(:domain) %>;
+  
+  access_log <%= current_path %>/log/<%= fetch(:domain) %>-acc;
+  error_log  <%= current_path %>/log/<%= fetch(:domain) %>-err;
+
+  rewrite ^ http://<%= fetch(:domain) %>$uri permanent;
+}
+
+server{
+  listen 80;
+  server_name <%= fetch(:domain) %>;
+
+  # Logs
+  access_log on;
+  error_log  <%= current_path %>/log/<%= fetch(:domain) %>-err;
+  access_log <%= current_path %>/log/<%= fetch(:domain) %>-acc;
+
+  # etag off;
+
+  charset utf-8;
+  proxy_intercept_errors on;
+
+  root <%= current_path %>/public;
+  client_max_body_size 256m;
+
+  error_page 500 errors/500.html;
+  error_page 501 errors/501.html;
+  error_page 502 errors/502.html;
+  error_page 503 errors/503.html;
+  error_page 504 errors/504.html;
+
+  location / {
+    try_files $uri /system/maintenance/index.html @web_site;
+  }
+
+  location @web_site {
+    proxy_pass http://<%= fetch (:web_server_socket) %>;
+
+    proxy_redirect off;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+    proxy_read_timeout 300;
+    proxy_buffer_size 16k;
+    proxy_buffers 32 16k;
+
+    proxy_set_header X-Forwarded-Proto $scheme;
+  }
+
+  location ~ ^/(assets|images|system)/ {
+    expires max;
+    gzip_static on;
+    add_header Cache-Control public;
+  }
+
+  location ~ /\.git {
+    deny all;
+  }
+
+  location ~ /\.ht {
+    deny all;
+  }
+
+  location ~ /\.svn {
+    deny all;
+  }
+
+  location ^~ /awstatsicons/ {
+    alias /var/www/awstats/icon/;
+  }
+}

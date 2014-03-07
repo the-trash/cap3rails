@@ -1,0 +1,101 @@
+namespace :watcher do
+  # cap production watcher:killall
+  task :killall do
+    on roles(:all) do
+      info "pkill -6 tail"
+    end
+  end
+
+  # cap production watcher:nginx_acc
+  task :nginx_acc do
+    on roles(:all) do
+      within fetch(:log_dir) do
+        execute :tail, '-f', "./#{ fetch(:domain) }-acc", '-n', '10'
+      end
+    end
+  end
+
+  # cap production watcher:nginx_err
+  task :nginx_err do
+    on roles(:all) do
+      within fetch(:log_dir) do
+        execute :tail, '-f', "./#{ fetch(:domain) }-err", '-n', '10'
+      end
+    end
+  end
+
+  # cap production watcher:stage_log
+  task :stage_log do
+    on roles(:all) do
+      within fetch(:log_dir) do
+        execute :tail, '-f', "./#{ fetch(:stage) }.log", '-n', '10'
+      end
+    end
+  end
+
+  # cap production watcher:redis_log
+  task :redis_log do
+    on roles(:all) do
+      execute :tail, '-f', fetch(:redis_log_file_path), '-n', '10'
+    end
+  end  
+
+  # cap production watcher:web_server_log
+  task :web_server_log do
+    on roles(:all) do
+      execute :tail, '-f', "#{ fetch(:web_server_log) }", '-n', '10'
+    end
+  end
+
+  # cap production watcher:web_server_errors
+  task :web_server_errors do
+    on roles(:all) do
+      execute :tail, '-f', "#{ fetch(:web_server_err) }", '-n', '10'
+    end
+  end
+
+  # cap production watcher:search_log
+  task :search_log do
+    on roles(:all) do
+      within fetch(:log_dir) do
+        execute :tail, '-f', "./searchd.log", '-n', '10'
+      end
+    end
+  end
+
+  # cap production watcher:search_q
+  task :search_q do
+    on roles(:all) do
+      within fetch(:log_dir) do
+        execute :tail, '-f', "./searchd.query.log", '-n', '10'
+      end
+    end
+  end
+
+  # cap production watcher:sidekiq_log
+  task :sidekiq_log do
+    on roles(:all) do
+      within fetch(:log_dir) do
+        execute :tail, '-f', "./sidekiq.log", '-n', '10'
+      end
+    end
+  end
+
+  # cap production watcher:cron_log
+  task :cron_log do
+    on roles(:all) do
+      within fetch(:log_dir) do
+        execute :tail, '-f', "./cron.log", '-n', '10'
+      end
+    end
+  end
+
+  # cap production watcher:cron_errors
+  task :cron_errors do
+    on roles(:all) do
+      within fetch(:log_dir) do
+        execute :tail, '-f', "./cron.err.log", '-n', '10'
+      end
+    end
+  end
+end

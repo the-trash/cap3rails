@@ -1,0 +1,58 @@
+namespace :configs do  
+  desc "cap production configs:keys"
+  task :keys do
+    on roles(:all) do
+      addr = Configs.role.app.address
+      user = Configs.role.app.ssh.user
+      pass = Configs.role.app.ssh.password
+
+      execute :mkdir, '-p', "~/.ssh"
+      cmd = "cat ~/.ssh/id_rsa.pub | ssh #{ user }@#{ addr } 'cat >> ~/.ssh/authorized_keys'"
+
+      puts cmd
+      puts "PASSWORD: #{ pass }"
+
+      system cmd
+    end
+  end
+
+  desc "cap production configs:copy"
+  task :copy do
+    on roles(:all) do
+      template "database.yml", "#{ fetch(:configs_dir) }/database.yml"
+
+      task! "nginx:config:copy"
+      task! "configs:chmod_logfile"
+
+      task! "ts:config:copy"        if sphinx?
+      task! "unicorn:config:copy"   if unicorn?
+      task! "whenever:config:copy"  if whenever?
+      task! "new_relic:config:copy" if new_relic?
+
+      if redis?
+        task! "redis:config:copy"
+        task! "redis:init:copy"
+      end
+      
+      if sidekiq?
+        task! "sidekiq:config:copy"  
+        task! "sidekiq:init:copy"
+      end
+
+      info  "Configs files copied"
+    end
+  end
+
+  desc "cap production configs:chmod_logfile"
+  task :chmod_logfile do
+    on roles(:all) do
+      log_file = "#{ release_path }/log/#{ fetch(:stage) }.log"
+
+      if remote_file_exists? log_file
+        execute :touch, log_file
+        execute :chmod, '0666', log_file
+        execute :chmod, '0666', "#{ fetch(:log_dir) }/#{ fetch(:stage) }.log"
+      end
+    end
+  end
+end

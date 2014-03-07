@@ -1,0 +1,89 @@
+namespace :info do
+  desc "cap production info:disk_usage"
+  task :disk_usage do
+    on roles(:all) do
+      deploy_path = fetch(:deploy_to)
+      execute :du, '-hs', deploy_path if remote_dir_exists? deploy_path
+      execute :du, '-hs', fetch(:rvm_path) if remote_dir_exists? fetch(:rvm_path)
+    end
+  end
+
+  desc "cap production info:image_magick"
+  task :image_magick do
+    on roles(:all) do
+      execute "convert --version"
+    end
+  end
+
+  desc "cap production info:nginx:show_config"
+  namespace :nginx do
+    task :show_config do
+      on roles(:all) do
+        nginx_config = "#{ fetch(:web_server_dir) }/nginx/config"
+        info nginx_config
+        execute :cat, nginx_config
+        
+        puts "*" * 30
+        erb = File.read CAP3_ROOT + "/templates/nginx/config"
+        res = ERB.new(erb).result(binding)
+        puts res
+        puts "*" * 30
+      end
+    end
+  end
+
+  desc "cap production info:sockets:show"
+    namespace :sockets do
+    task :show do
+      on roles(:all) do
+        execute :ls, "#{ shared_path }/tmp/sockets"
+      end
+    end
+  end
+
+  desc "cap production info:pids:show"
+    namespace :pids do
+    task :show do
+      on roles(:all) do
+        execute :ls, "#{ shared_path }/tmp/pids"
+      end
+    end
+  end
+
+  namespace :ts do
+    desc "cap production info:ts:config"
+    task :config do
+      on roles(:all) do
+        file = "#{ current_path }/config/thinking_sphinx.yml"
+        execute :cat, file
+      end
+    end
+
+    desc "cap production info:ts:indexer_config"
+    task :indexer_config do
+      on roles(:all) do
+        file = "#{ current_path }/config/searchd.config"
+        execute :cat, file
+      end
+    end
+  end
+
+  namespace :redis do
+    desc "cap production info:redis:config"
+    task :config do
+      on roles(:all) do
+        file = "#{ fetch :redis_dir }/redis.config"
+        execute :cat, file
+      end
+    end
+
+    desc "cap production info:redis:server_script"
+    task :server_script do
+      on roles(:all) do
+        file = "#{ fetch :redis_dir }/server"
+        execute :cat, file
+        execute :ls,  '-la', file
+      end
+    end
+  end
+end

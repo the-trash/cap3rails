@@ -1,0 +1,62 @@
+namespace :rvm do
+  namespace :install do
+    # RVM_HOOK=false cap production rvm:install:for_user
+    desc "RVM_HOOK=false cap production rvm:install:for_user"
+    task :for_user do
+      on roles(:all) do
+        execute '\curl -sSL https://get.rvm.io | bash -s stable' if !remote_dir_exists? ".rvm"
+      end
+    end
+
+    desc "RVM_HOOK=false cap production rvm:install:ruby"
+    task :ruby do
+      on roles(:all) do
+        if remote_dir_exists? fetch(:rvm_path)
+          execute :rvm, :install, Configs.rvm.ruby
+        end
+      end
+    end
+
+    desc "RVM_HOOK=false cap production rvm:install:gemset"
+    task :gemset do
+      on roles(:all) do
+        if remote_dir_exists? fetch(:rvm_path)
+          execute :rvm, "#{ Configs.rvm.ruby }@#{ Configs.rvm.gemset }", "--create", :do, :true
+        end
+      end
+    end
+
+    # cap production rvm:install:rubygems
+    desc "cap production rvm:install:rubygems"
+    task :rubygems do
+      on roles(:all) do
+        if remote_dir_exists? fetch(:rvm_path)
+          execute "#{ rvm_do } rvm install rubygems #{ Configs.rvm.rubygems }"
+        end
+      end
+    end
+
+    desc "RVM_HOOK=false cap production rvm:install:env"
+    task :env do
+      on roles(:all) do
+        task! "rvm:install:for_user"
+
+        task! "rvm:install:ruby"
+        task! "rvm:install:gemset"
+      end
+    end
+  end
+
+  # RVM_HOOK=false cap production rvm:uninstall:rvm
+  namespace :uninstall do
+    task :rvm do
+      on roles(:all) do
+        if remote_dir_exists? fetch(:rvm_path)
+          execute "(echo 'yes') | (rvm implode)"
+        else
+          info "RVM not installed"
+        end
+      end
+    end
+  end  
+end

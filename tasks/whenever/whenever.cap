@@ -1,0 +1,52 @@
+namespace :whenever do
+  desc "cap production whenever:crontab_show"
+  task :crontab_show do
+    on roles(:all) do
+      execute :crontab, '-l'
+    end
+  end
+
+  desc "cap production whenever:update"
+  task :update do
+    on roles(:all) do
+      within current_path do
+        execute :bundle, :exec, :whenever, "--update-crontab #{ fetch :whenever_ns } --set environment=#{ fetch(:stage) }"
+      end
+    end
+  end
+
+  desc "cap production whenever:stop"
+  task :stop do
+    on roles(:all) do
+      within current_path do
+        execute :bundle, :exec, :whenever, "--clear-crontab #{ fetch :whenever_ns }"
+      end
+    end
+  end
+
+  namespace :config do
+    desc "cap production whenever:config:show"
+    task :show do
+      on roles(:all) do
+        within current_path do
+          execute :bundle, :exec, :whenever
+        end
+      end
+    end
+
+    desc "cap production whenever:config:file_show"
+    task :file_show do
+      on roles(:all) do
+        execute :cat, "#{ fetch(:configs_dir) }/schedule.rb"
+      end
+    end
+
+    desc "cap production whenever:config:copy"
+    task :copy do
+      on roles(:all) do
+        template "whenever/config.rb", "#{ fetch(:configs_dir) }/schedule.rb"
+      end
+    end
+  end
+
+end

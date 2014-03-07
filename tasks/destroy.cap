@@ -1,0 +1,20 @@
+namespace :destroy do
+  desc "cap production destroy:hard"
+  task :hard do
+    on roles(:all) do
+      execute "rm -rf #{deploy_to}"
+    end
+  end
+
+  desc "cap production destroy:soft"
+  task :soft do
+    on roles(:all) do
+      task! "unicorn:stop"  if unicorn?
+      task! "ts:stop"       if sphinx?
+      task! "redis:stop"    if redis?
+      task! "sidekiq:stop"  if sidekiq?
+
+      task! "destroy:hard"
+    end
+  end
+end

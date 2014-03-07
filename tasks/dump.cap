@@ -1,0 +1,43 @@
+namespace :dump do
+  desc "cap production dump:all"
+  task :all do
+    task! "db:dump"
+    task! "dump:files"
+  end
+
+  desc "cap production dump:db"
+  task :db do
+    task! "db:dump"
+  end
+
+  desc "cap production dump:files"
+  task :files do
+    on roles(:all) do
+      dump_path = shared_path + "dumps"
+      execute :mkdir, '-p', dump_path
+
+      uploads_file = [Configs.db.name, :uploads, Time.now.strftime("%Y_%m_%d_%H_%M"), :tar].join('.')
+
+      within dump_path do
+        tar_path = "tar"
+        opts     = "-cf ./#{ uploads_file } #{ shared_path }/#{ Configs.shared_uploads }"
+        
+        info "#{ tar_path } #{ opts }" 
+        execute tar_path, opts
+      end
+
+      ssh_addr = "#{ Configs.role.app.ssh.user }@#{ Configs.role.app.address }"
+      copy_cmd = "scp #{ ssh_addr }:#{ dump_path }/#{ uploads_file } #{ fetch :local_backups_dir }/#{ uploads_file }"
+
+      warn "*" * 50
+      info "COPY: #{ copy_cmd }"
+      info Configs.role.app.ssh.password
+
+      warn "*" * 50
+      system copy_cmd
+
+      warn "*" * 50
+      info "UNTAR: tar -xvf #{ fetch :local_backups_dir }/#{ uploads_file }"
+    end
+  end
+end
