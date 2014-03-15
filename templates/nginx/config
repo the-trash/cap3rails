@@ -29,11 +29,7 @@ server{
   root <%= current_path %>/public;
   client_max_body_size 256m;
 
-  error_page 500 errors/500.html;
-  error_page 501 errors/501.html;
-  error_page 502 errors/502.html;
-  error_page 503 errors/503.html;
-  error_page 504 errors/504.html;
+  error_page 500 501 502 503 504 /500.html;
 
   location / {
     try_files $uri /system/maintenance/index.html @web_site;

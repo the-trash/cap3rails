@@ -52,26 +52,26 @@ def remote_symlink_exists? path
 end
 
 # Check for tool
-def new_relic?
-  Configs.tools.new_relic
-end
-
-def whenever?
-  Configs.tools.whenever
-end
-
-def sphinx?
-  Configs.tools.sphinx
-end
-
 def unicorn?
   Configs.web_server == "unicorn"
 end
 
+def new_relic?
+  Configs.tools['new_relic']
+end
+
+def whenever?
+  Configs.tools['whenever']
+end
+
+def sphinx?
+  Configs.tools['sphinx']
+end
+
 def sidekiq?
-  Configs.tools.sidekiq
+  Configs.tools['sidekiq']
 end
 
 def redis?
-  Configs.tools.redis
+  Configs.tools['redis']
 end

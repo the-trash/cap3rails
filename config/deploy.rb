@@ -24,30 +24,33 @@ set :log_dir,     "#{ shared_path }/log"
 
 set :web_server_dir, "#{ shared_path }/web_server"
 
-# Sphinx
-set :sphinx_conf_file, "#{ fetch :configs_dir }/searchd.config"
+if whenever?
+  set :whenever_ns, Configs.whenever.namespace
+end
 
-# Whenever
-set :whenever_ns, Configs.whenever.namespace
+if redis?
+  set :redis_port, Configs.redis.port
+  set :redis_ns,   Configs.redis.namespace
 
-# REDIS params
-set :redis_port, Configs.redis.port
-set :redis_ns,   Configs.redis.namespace
+  set :redis_dir,  "#{ shared_path }/redis_db"
+  redis_file_name = "redis_#{ fetch :redis_port }_#{ fetch :redis_ns }"
+  set :redis_db_file, redis_file_name
 
-set :redis_dir,  "#{ shared_path }/redis_db"
-redis_file_name = "redis_#{ fetch :redis_port }_#{ fetch :redis_ns }"
-set :redis_db_file, redis_file_name
+  set :redis_config_file, "#{ redis_file_name }.config"
+  set :redis_pid_file,    "redis.pid"
+  set :redis_log_file,    "redis.log"
+  set :redis_port_file,   "redis.port"
 
-set :redis_config_file, "#{ redis_file_name }.config"
-set :redis_pid_file,    "redis.pid"
-set :redis_log_file,    "redis.log"
-set :redis_port_file,   "redis.port"
+  set :redis_config_file_path, "#{ fetch :configs_dir }/#{ fetch :redis_config_file }"
+  set :redis_port_file_path,   "#{ fetch :configs_dir }/#{ fetch :redis_port_file   }"
 
-set :redis_config_file_path, "#{ fetch :configs_dir }/#{ fetch :redis_config_file }"
-set :redis_port_file_path,   "#{ fetch :configs_dir }/#{ fetch :redis_port_file   }"
+  set :redis_log_file_path, "#{ fetch :log_dir  }/#{ fetch :redis_log_file }"
+  set :redis_pid_file_path, "#{ fetch :pids_dir }/#{ fetch :redis_pid_file }"
+end
 
-set :redis_log_file_path, "#{ fetch :log_dir  }/#{ fetch :redis_log_file }"
-set :redis_pid_file_path, "#{ fetch :pids_dir }/#{ fetch :redis_pid_file }"
+if sphinx?
+  set :sphinx_conf_file, "#{ fetch :configs_dir }/searchd.config"
+end
 
 # WebServer params
 set :web_server_socket,  Configs.unicorn.socket_name

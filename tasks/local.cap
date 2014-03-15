@@ -30,10 +30,10 @@ namespace :local do
 
     puts
 
-    FileUtils.mkdir_p "#{ dest }/app.rc"
-    local_template "app.rc/init.sh",  "#{ dest }/app.rc/init.sh",  { dest: dest }
-    local_template "app.rc/start.sh", "#{ dest }/app.rc/start.sh", { dest: dest }
-    local_template "app.rc/stop.sh",  "#{ dest }/app.rc/stop.sh",  { dest: dest }
-    puts "chmod -R 755 #{ dest }/app.rc"
+    FileUtils.mkdir_p "#{ dest }/script"
+    local_template "script/init.sh",  "#{ dest }/script/app.init.sh.example",  { dest: dest }
+    local_template "script/start.sh", "#{ dest }/script/app.start.sh.example", { dest: dest }
+    local_template "script/stop.sh",  "#{ dest }/script/app.stop.sh.example",  { dest: dest }
+    puts "chmod -R 755 #{ dest }/script/app.*.sh"
   end
 end

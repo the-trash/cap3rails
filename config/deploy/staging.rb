@@ -1,4 +1,4 @@
-set :stage, :staging
+set :stage, :production
 
 # RVM
 set :rvm_type, :user
