@@ -17,7 +17,7 @@ APP_ROOT=<%= current_path %>
 PID=<%= fetch :web_server_pid %>
 AS_USER=<%= fetch :web_server_user %>
 
-CMD="<%= fetch :bin_dir %>/unicorn_rails -D -c <%= fetch :web_server_config %> -E production"
+CMD="<%= fetch :bin_dir %>/unicorn_rails -D -c <%= fetch :web_server_config %> -E <%= fetch :stage %>"
 
 set -u
 
