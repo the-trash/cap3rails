@@ -1,4 +1,6 @@
 namespace :dj do
+  # rake jobs:clear
+  
   def args
     fetch(:delayed_job_args, "")
   end
