@@ -1,0 +1,28 @@
+namespace :dj do
+  def args
+    fetch(:delayed_job_args, "")
+  end
+
+  def delayed_job_roles
+    fetch(:delayed_job_server_role, :app)
+  end
+
+  %w[ start stop ].each do |action|
+    desc "cap production dj:#{ action }"
+    task action do
+      on roles(delayed_job_roles) do
+        within current_path do
+          with rails_env: fetch(:stage) do
+            execute :bundle, :exec, :'script/delayed_job', args, action
+          end
+        end
+      end
+    end
+  end
+
+  desc "cap production dj:restart"
+  task :restart do
+    task! "dj:stop"
+    task! "dj:start"
+  end
+end

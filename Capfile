@@ -26,7 +26,17 @@ Dir.glob('helpers/*.rb').each { |r| import r }
 Dir.glob('tasks/*.cap').each  { |r| import r }
 
 # Rakes for tools
-%w[ unicorn nginx whenever thinking_sphinx redis sidekiq software new_relic ].each do |tool|
+%w[
+  nginx
+  unicorn
+  whenever
+  thinking_sphinx
+
+  delayed_job
+  redis sidekiq 
+
+  software new_relic
+].each do |tool|
   Dir.glob("tasks/#{ tool }/*.cap").each do |tasks_set|
     import tasks_set
   end

@@ -1,4 +1,7 @@
 namespace :rvm do
+  # execute :echo, "$0"
+  # execute "type rvm | head -n 1"
+
   namespace :install do
     # RVM_HOOK=false cap production rvm:install:for_user
     desc "RVM_HOOK=false cap production rvm:install:for_user"
@@ -40,7 +43,6 @@ namespace :rvm do
     task :env do
       on roles(:all) do
         task! "rvm:install:for_user"
-
         task! "rvm:install:ruby"
         task! "rvm:install:gemset"
       end
